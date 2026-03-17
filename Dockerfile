@@ -42,3 +42,7 @@ RUN node -v && claude --version && opencode --version && copilot --version
 
 # 安全清理
 RUN rm -rf /tmp/* /root/.npm/_cacache
+
+# 健康检查：验证 opencode 二进制文件可执行
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD opencode --version || exit 1
