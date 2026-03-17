@@ -1,9 +1,9 @@
 FROM node:lts-slim
 
 LABEL org.opencontainers.image.source="https://github.com/smellgamed3/ai-coding-base-img"
-LABEL org.opencontainers.image.description="AI coding tools base image: Node.js LTS, Claude Code, OpenCode, GitHub Copilot CLI"
+LABEL org.opencontainers.image.description="AI 编码工具基础镜像：Node.js LTS、Claude Code、OpenCode、GitHub Copilot CLI"
 
-# Install system dependencies (curl, ca-certificates, git) and GitHub CLI
+# 安装系统依赖（curl、ca-certificates、git）以及 GitHub CLI
 RUN apt-get update && apt-get install -y --no-install-recommends \
         curl \
         ca-certificates \
@@ -17,17 +17,26 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get install -y --no-install-recommends gh \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Claude Code
+# 安装 Claude Code
 RUN npm i -g @anthropic-ai/claude-code@latest
 
-# Install OpenCode
+# 安装 OpenCode
 RUN curl -fsSL https://opencode.ai/install | bash
 
-# Install GitHub Copilot CLI
+# 安装 GitHub Copilot CLI
 RUN curl -fsSL https://gh.io/copilot-install | bash
 
-# Print installed versions (build log serves as version manifest)
+# 写入 OpenCode 全局配置：默认中文优先
+# 配置文件路径遵循 XDG 规范（~/.config/opencode/config.json）
+RUN mkdir -p /root/.config/opencode
+COPY opencode-config.json /root/.config/opencode/config.json
+
+# 将 AGENTS.md 复制至 /root，使 OpenCode 在默认工作目录（/root）下即可自动读取规则
+# OpenCode 会沿目录树向上查找 AGENTS.md，因此放置于 /root 可覆盖容器内所有子目录
+COPY AGENTS.md /root/AGENTS.md
+
+# 打印各工具版本（构建日志作为版本清单）
 RUN node -v && claude --version && opencode --version && copilot --version
 
-# Security cleanup
+# 安全清理
 RUN rm -rf /tmp/* /root/.npm/_cacache
