@@ -52,10 +52,10 @@ jobs:
           docker run --rm ai-coding-base:ci-test opencode --version
 
           echo "=== claude --version ==="
-          docker run --rm ai-coding-base:ci-test claude --version || true
+          docker run --rm ai-coding-base:ci-test claude --version
 
           echo "=== copilot --version ==="
-          docker run --rm ai-coding-base:ci-test copilot --version || true
+          docker run --rm ai-coding-base:ci-test copilot --version
 
           echo "✅ 所有工具验证完成"
 
