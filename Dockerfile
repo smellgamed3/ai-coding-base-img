@@ -3,11 +3,12 @@ FROM node:lts-slim
 LABEL org.opencontainers.image.source="https://github.com/smellgamed3/ai-coding-base-img"
 LABEL org.opencontainers.image.description="AI 编码工具基础镜像：Node.js LTS、Claude Code、OpenCode、GitHub Copilot CLI"
 
-# 安装系统依赖（curl、ca-certificates、git）以及 GitHub CLI
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        curl \
-        ca-certificates \
-        git \
+# 复制 apt 包列表配置文件（基础依赖声明）
+COPY apt-packages.txt /tmp/apt-packages.txt
+
+# 安装系统依赖（从 apt-packages.txt 读取基础包）以及 GitHub CLI
+RUN apt-get update \
+    && grep -v '^\s*#' /tmp/apt-packages.txt | grep -v '^\s*$' | xargs -r apt-get install -y --no-install-recommends \
     && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
         | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
     && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
@@ -28,10 +29,14 @@ RUN curl -fsSL https://opencode.ai/install | bash && \
 # 安装 GitHub Copilot CLI
 RUN curl -fsSL https://gh.io/copilot-install | bash
 
-# 写入 OpenCode 全局配置：默认中文优先
-# 配置文件路径遵循 XDG 规范（~/.config/opencode/config.json）
+# 写入 OpenCode 全局配置（官方格式：opencode.json）
+# 配置文件路径遵循 XDG 规范（~/.config/opencode/opencode.json）
 RUN mkdir -p /root/.config/opencode
-COPY opencode-config.json /root/.config/opencode/config.json
+COPY opencode-config.json /root/.config/opencode/opencode.json
+
+# 写入 Claude Code 项目级配置（官方格式：.claude/settings.json）
+RUN mkdir -p /root/.claude
+COPY .claude/settings.json /root/.claude/settings.json
 
 # 将 AGENTS.md 复制至 /root，使 OpenCode 在默认工作目录（/root）下即可自动读取规则
 # OpenCode 会沿目录树向上查找 AGENTS.md，因此放置于 /root 可覆盖容器内所有子目录

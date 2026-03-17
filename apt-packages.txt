@@ -1,0 +1,10 @@
+# apt 基础依赖包列表
+# 此文件由 Dockerfile 在构建镜像时使用
+# 每行一个包名，以 # 开头的行为注释
+
+# 网络与安全
+curl
+ca-certificates
+
+# 版本控制
+git
