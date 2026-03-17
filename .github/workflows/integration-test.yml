@@ -1,0 +1,51 @@
+name: 集成测试 / Integration Test
+
+on:
+  workflow_run:
+    workflows: ["Nightly Build"]
+    types:
+      - completed
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - 'copilot/**'
+
+env:
+  IMAGE: ghcr.io/smellgamed3/ai-coding-base:latest
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    # 仅在构建成功后运行（手动触发或 push 时跳过此条件）
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: 登录 GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 拉取最新镜像
+        run: docker pull ${{ env.IMAGE }}
+
+      - name: 测试 opencode --version
+        run: |
+          docker run --rm --pull never ${{ env.IMAGE }} opencode --version
+
+      - name: 测试 node --version
+        run: |
+          docker run --rm --pull never ${{ env.IMAGE }} node --version
+
+      - name: 测试 claude --version
+        run: |
+          docker run --rm --pull never ${{ env.IMAGE }} claude --version
+
+      - name: 测试 copilot --version
+        run: |
+          docker run --rm --pull never ${{ env.IMAGE }} copilot --version
