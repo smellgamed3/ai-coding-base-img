@@ -68,3 +68,67 @@ jobs:
           docker run --rm ai-coding-base:ci-test node -e \
             "var cfg=JSON.parse(require('fs').readFileSync('/root/.config/opencode/config.json','utf8'));if(!Array.isArray(cfg.instructions)){console.error('FAILED: instructions is not an array, got '+typeof cfg.instructions);process.exit(1);}console.log('OK: instructions is array with '+cfg.instructions.length+' item(s)');"
           echo "✅ 配置文件格式验证通过"
+
+      - name: 验证容器内关键文件存在
+        run: |
+          echo "=== 验证 OpenCode 配置文件 ==="
+          docker run --rm ai-coding-base:ci-test test -f /root/.config/opencode/config.json \
+            && echo "✅ /root/.config/opencode/config.json 存在" \
+            || (echo "❌ /root/.config/opencode/config.json 不存在"; exit 1)
+
+          echo "=== 验证 Claude 配置文件 ==="
+          docker run --rm ai-coding-base:ci-test test -f /root/.claude/settings.json \
+            && echo "✅ /root/.claude/settings.json 存在" \
+            || (echo "❌ /root/.claude/settings.json 不存在"; exit 1)
+
+          echo "=== 验证 AGENTS.md 文件 ==="
+          docker run --rm ai-coding-base:ci-test test -f /root/AGENTS.md \
+            && echo "✅ /root/AGENTS.md 存在" \
+            || (echo "❌ /root/AGENTS.md 不存在"; exit 1)
+
+          echo "✅ 所有关键文件验证通过"
+
+      - name: 验证工具二进制文件可执行
+        run: |
+          echo "=== 验证 opencode 二进制文件 ==="
+          docker run --rm ai-coding-base:ci-test which opencode \
+            && echo "✅ opencode 在 PATH 中可用" \
+            || (echo "❌ opencode 不在 PATH 中"; exit 1)
+
+          echo "=== 验证 claude 二进制文件 ==="
+          docker run --rm ai-coding-base:ci-test which claude \
+            && echo "✅ claude 在 PATH 中可用" \
+            || (echo "❌ claude 不在 PATH 中"; exit 1)
+
+          echo "=== 验证 copilot 二进制文件 ==="
+          docker run --rm ai-coding-base:ci-test which copilot \
+            && echo "✅ copilot 在 PATH 中可用" \
+            || (echo "❌ copilot 不在 PATH 中"; exit 1)
+
+          echo "=== 验证 gh 二进制文件 ==="
+          docker run --rm ai-coding-base:ci-test which gh \
+            && echo "✅ gh 在 PATH 中可用" \
+            || (echo "❌ gh 不在 PATH 中"; exit 1)
+
+          echo "✅ 所有工具二进制文件验证通过"
+
+      - name: 验证 Claude 配置文件格式正确
+        run: |
+          echo "=== 检查 Claude settings.json 内容 ==="
+          docker run --rm ai-coding-base:ci-test cat /root/.claude/settings.json
+          echo ""
+          echo "=== 验证 Claude 配置为合法 JSON ==="
+          docker run --rm ai-coding-base:ci-test node -e \
+            "var cfg=JSON.parse(require('fs').readFileSync('/root/.claude/settings.json','utf8'));console.log('OK: Claude settings.json is valid JSON with keys: '+Object.keys(cfg).join(', '));"
+          echo "✅ Claude 配置文件格式验证通过"
+
+      - name: 验证 AGENTS.md 内容不为空
+        run: |
+          echo "=== 检查 AGENTS.md 内容 ==="
+          LINES=$(docker run --rm ai-coding-base:ci-test bash -c "wc -l < /root/AGENTS.md")
+          echo "AGENTS.md 行数：$LINES"
+          if [ -z "$LINES" ] || [ "$LINES" -lt 1 ]; then
+            echo "❌ AGENTS.md 为空！"
+            exit 1
+          fi
+          echo "✅ AGENTS.md 内容验证通过"

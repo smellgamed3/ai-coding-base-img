@@ -75,7 +75,7 @@ jobs:
             bash -c "node -v && claude --version && opencode --version"
 
       - name: 运行 opencode run 指令健康测试（需要 AI 提供商凭据）
-        if: secrets.OPENCODE_API_KEY != ''
+        if: ${{ secrets.OPENCODE_API_KEY != '' }}
         run: |
           docker run --rm --platform linux/amd64 \
             -e OPENCODE_API_KEY="${{ secrets.OPENCODE_API_KEY }}" \
