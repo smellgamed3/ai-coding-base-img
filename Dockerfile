@@ -20,9 +20,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # 安装 Claude Code
 RUN npm i -g @anthropic-ai/claude-code@latest
 
-# 安装 OpenCode（指定安装目录为 /usr/local/bin，确保在 PATH 中）
-# 注意：环境变量必须传给 bash（安装脚本进程），而非 curl
-RUN curl -fsSL https://opencode.ai/install | OPENCODE_INSTALL_DIR=/usr/local/bin bash
+# 安装 OpenCode
+# 安装脚本默认安装到 /root/.opencode/bin，需软链接到 /usr/local/bin 使其在 PATH 中可用
+RUN curl -fsSL https://opencode.ai/install | bash && \
+    ln -sf /root/.opencode/bin/opencode /usr/local/bin/opencode
 
 # 安装 GitHub Copilot CLI
 RUN curl -fsSL https://gh.io/copilot-install | bash
