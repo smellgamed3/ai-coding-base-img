@@ -74,8 +74,19 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
             bash -c "node -v && claude --version && opencode --version"
 
+      - name: 检查 OPENCODE_API_KEY 是否已配置
+        id: check_api_key
+        env:
+          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
+        run: |
+          if [ -n "$OPENCODE_API_KEY" ]; then
+            echo "has_key=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_key=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: 运行 opencode run 指令健康测试（需要 AI 提供商凭据）
-        if: ${{ secrets.OPENCODE_API_KEY != '' }}
+        if: ${{ steps.check_api_key.outputs.has_key == 'true' }}
         run: |
           docker run --rm --platform linux/amd64 \
             -e OPENCODE_API_KEY="${{ secrets.OPENCODE_API_KEY }}" \
