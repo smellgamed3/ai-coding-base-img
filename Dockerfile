@@ -29,10 +29,10 @@ RUN curl -fsSL https://opencode.ai/install | bash && \
 # 安装 GitHub Copilot CLI
 RUN curl -fsSL https://gh.io/copilot-install | bash
 
-# 写入 OpenCode 全局配置（官方格式：opencode.json）
-# 配置文件路径遵循 XDG 规范（~/.config/opencode/opencode.json）
+# 写入 OpenCode 全局配置（官方格式：config.json）
+# 配置文件路径遵循 XDG 规范（~/.config/opencode/config.json）
 RUN mkdir -p /root/.config/opencode
-COPY opencode-config.json /root/.config/opencode/opencode.json
+COPY opencode-config.json /root/.config/opencode/config.json
 
 # 写入 Claude Code 项目级配置（官方格式：.claude/settings.json）
 RUN mkdir -p /root/.claude
